@@ -1,0 +1,13 @@
+[project]
+name = "2025-04-usu-asc"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+requires-python = ">=3.10"
+dependencies = [
+    "jupyter>=1.1.1",
+    "marginaleffects>=0.1.1",
+    "numpy>=2.2.4",
+    "polars>=1.26.0",
+    "statsmodels>=0.14.4",
+]

@@ -1,0 +1,55 @@
+project:
+  type: website
+  render:
+    - "*.qmd"
+    - "!README.md"
+    - "!LICENSE.md"
+    - "!example/"
+  resources:
+    - "examples.zip"
+
+date-format: long
+
+website:
+  title: "USU ASC"
+  search: false
+  navbar:
+    background: "#0F2439"
+    pinned: true
+    left:
+      - text: Home
+        file: index.qmd
+      - text: "DS4PS and causal inference"
+        file: causal-inference/index.qmd
+      - text: "{marginaleffects}"
+        file: marginaleffects/index.qmd
+    right:
+      - icon: github
+        href: "https://github.com/andrewheiss/2024-04_usu-asc"
+        aria-label: GitHub
+  
+  sidebar:
+    - title: "{marginaleffects}"
+      style: docked
+      contents:
+        - marginaleffects/index.qmd
+        - marginaleffects/playground.qmd
+    
+    - title: "Empty space lol"
+
+  page-footer:
+    left: |
+      Content {{< fa brands creative-commons >}} 2025 by [Andrew Heiss](https://www.andrewheiss.com/)<br>
+      All content licensed under a {{< fa brands creative-commons >}}
+      {{< fa brands creative-commons-by >}} {{< fa brands creative-commons-nc >}}
+      [Creative Commons Attribution-NonCommercial 4.0 International license (CC BY-NC 4.0)](https://creativecommons.org/licenses/by-nc/4.0/)
+    right: |
+      Made with {{< fa brands r-project >}} and [Quarto](https://quarto.org/)<br>
+      [View the source at {{< fa brands github >}} GitHub](https://github.com/andrewheiss/2024-04_usu-asc)
+
+format:
+  html:
+    theme:
+      - zephyr
+      - custom.scss
+    toc: false

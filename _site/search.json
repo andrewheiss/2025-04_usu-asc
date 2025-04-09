@@ -1,0 +1,287 @@
+[
+  {
+    "objectID": "slides/marginaleffects-slides.html#section",
+    "href": "slides/marginaleffects-slides.html#section",
+    "title": "Moving from models to meaning",
+    "section": "",
+    "text": "Sliders, switches, and mixing boards\nMoving from model to meaning\n{marginaleffects} in action"
+  },
+  {
+    "objectID": "slides/marginaleffects-slides.html#section-2",
+    "href": "slides/marginaleffects-slides.html#section-2",
+    "title": "Moving from models to meaning",
+    "section": "",
+    "text": "model_slider = smf.ols(\n  \"happiness_score ~ life_expectancy\", \n  data = happiness).fit()\nmodel_slider.summary()\n\n\nParameter       | Coefficient |       SE |         95% CI | t(153) |      p\n---------------------------------------------------------------------------\n(Intercept)     |       -2.21 |     0.56 | [-3.31, -1.12] |  -3.98 | &lt; .001\nlife expectancy |        0.11 | 7.68e-03 | [ 0.09,  0.12] |  13.73 | &lt; .001"
+  },
+  {
+    "objectID": "slides/marginaleffects-slides.html#section-3",
+    "href": "slides/marginaleffects-slides.html#section-3",
+    "title": "Moving from models to meaning",
+    "section": "",
+    "text": "model_switch = smf.ols(\n  \"happiness_score ~ latin_america\", \n  data = happiness).fit()\nmodel_switch.summary()\n\n\nParameter         | Coefficient |   SE |       95% CI | t(153) |      p\n-----------------------------------------------------------------------\n(Intercept)       |        5.24 | 0.10 | [5.05, 5.43] |  54.36 | &lt; .001\nlatin americaTRUE |        0.90 | 0.26 | [0.40, 1.41] |   3.52 | &lt; .001"
+  },
+  {
+    "objectID": "slides/marginaleffects-slides.html#section-5",
+    "href": "slides/marginaleffects-slides.html#section-5",
+    "title": "Moving from models to meaning",
+    "section": "",
+    "text": "model_mixer = smf.ols(\n  \"happiness_score ~ life_expectancy + school_enrollment + C(region)\", \n  data = happiness.to_pandas()).fit()\nmodel_mixer.summary()\n\n\n# A tibble: 9 × 5\n  term                             estimate std.error statistic      p.value\n  &lt;chr&gt;                               &lt;dbl&gt;     &lt;dbl&gt;     &lt;dbl&gt;        &lt;dbl&gt;\n1 (Intercept)                      -2.82      1.35       -2.08  0.0400      \n2 life_expectancy                   0.102     0.0174      5.89  0.0000000587\n3 school_enrollment                 0.00769   0.00979     0.785 0.435       \n4 regionEurope & Central Asia       0.0315    0.255       0.123 0.902       \n5 regionLatin America & Caribbean   0.732     0.294       2.49  0.0146      \n6 regionMiddle East & North Africa  0.189     0.317       0.597 0.552       \n7 regionNorth America               1.11      0.581       1.92  0.0582      \n8 regionSouth Asia                 -0.249     0.450      -0.553 0.582       \n9 regionSub-Saharan Africa          0.326     0.407       0.802 0.425"
+  },
+  {
+    "objectID": "slides/marginaleffects-slides.html#stop-looking-at-raw-model-parameters",
+    "href": "slides/marginaleffects-slides.html#stop-looking-at-raw-model-parameters",
+    "title": "Moving from models to meaning",
+    "section": "Stop looking at raw model parameters!",
+    "text": "Stop looking at raw model parameters!\n \nExcept in super simple models, dealing with raw coefficients is (1) a hassle and (2) impossible for readers and stakeholders to understand.\n \nConvert model parameters into quantities that make more intuitive sense."
+  },
+  {
+    "objectID": "slides/marginaleffects-slides.html#post-estimation-questions",
+    "href": "slides/marginaleffects-slides.html#post-estimation-questions",
+    "title": "Moving from models to meaning",
+    "section": "Post-estimation questions",
+    "text": "Post-estimation questions\n\n\nQuantity: What are you interested in? Predictions? Comparisons of means? Relationships?\nPredictors or Grid: Which predictor values are you interested in? Predictions for rows in the dataset? For hypothetical new rows?\nAggregation: Do you want to look at unit-level estimates or do you want to collapse estimates into summarized values?\nUncertainty: How will you quantify uncertainty?\nTest: Which hypothesis tests are relevant?"
+  },
+  {
+    "objectID": "slides/marginaleffects-slides.html#post-estimation-questions-1",
+    "href": "slides/marginaleffects-slides.html#post-estimation-questions-1",
+    "title": "Moving from models to meaning",
+    "section": "Post-estimation questions",
+    "text": "Post-estimation questions\n \nMore simply, which values are you plugging into the model and what are you doing with them after?"
+  },
+  {
+    "objectID": "slides/marginaleffects-slides.html#quantity",
+    "href": "slides/marginaleffects-slides.html#quantity",
+    "title": "Moving from models to meaning",
+    "section": "Quantity",
+    "text": "Quantity\n \nPredictions (or fitted values, adjusted predictions): What a model spits out after you plug stuff into it. Can be on the original scale of the outcome or transformed (like log odds or odds ratios).\n \n                  coef      std err         t  P&gt;|t|\nIntercept         -2.2146     0.556    -3.983  0.000\nlife_expectancy   0.1055      0.008    13.729  0.000"
+  },
+  {
+    "objectID": "slides/marginaleffects-slides.html#quantity-1",
+    "href": "slides/marginaleffects-slides.html#quantity-1",
+    "title": "Moving from models to meaning",
+    "section": "Quantity",
+    "text": "Quantity\n \n\\[\n\\begin{aligned}\n\\hat{\\text{happiness}} &= -2.2146 + (0.1055 \\times 70) \\\\\n&= 5.17\n\\end{aligned}\n\\]"
+  },
+  {
+    "objectID": "slides/marginaleffects-slides.html#quantity-2",
+    "href": "slides/marginaleffects-slides.html#quantity-2",
+    "title": "Moving from models to meaning",
+    "section": "Quantity",
+    "text": "Quantity\n \nComparisons: Some function of two or more predictions—differences in means, risk ratios, effects, lift\n \nSlopes: Partial derivative for a continuous predictor. Like a comparison, but moving it just a tiny bit."
+  },
+  {
+    "objectID": "slides/marginaleffects-slides.html#predictors-grid",
+    "href": "slides/marginaleffects-slides.html#predictors-grid",
+    "title": "Moving from models to meaning",
+    "section": "Predictors (grid)",
+    "text": "Predictors (grid)\nWhat values are you plugging into the model to generate the quantity of interest?\n\nObserved: Actual observations (like Albania’s 78.174 years of life expectancy)\nPartially synthetic: Actual observations, but setting some columns to specific values\nFully synthetic: Made up observations (like making predictions for a typical country with 50, 60, 70, and 80 years of life expectancy, holding everything else constant)"
+  },
+  {
+    "objectID": "slides/marginaleffects-slides.html#aggregation",
+    "href": "slides/marginaleffects-slides.html#aggregation",
+    "title": "Moving from models to meaning",
+    "section": "Aggregation",
+    "text": "Aggregation\n \nAre you collapsing the quantities of interest, and if so, how?\n\nIndividual estimates\nAverage estimates\nAverage estimates by group"
+  },
+  {
+    "objectID": "slides/marginaleffects-slides.html#section-8",
+    "href": "slides/marginaleffects-slides.html#section-8",
+    "title": "Moving from models to meaning",
+    "section": "",
+    "text": "On average, how does happiness increase in relation to small increases in life expectancy?\n\nQuantity: Comparison—a one-unit increase in life expectancy (slope)\nGrid: Predictions for each row\nAggregation: Collapse into overall average\n\nmodel_mixer = smf.ols(\n  \"happiness_score ~ life_expectancy + school_enrollment + C(region)\", \n  data = happiness.to_pandas()).fit()\navg_comparisons(model_mixer, variables = \"life_expectancy\")\n Estimate Std. Error    z Pr(&gt;|z|)    S  2.5 % 97.5 %\n    0.102     0.0174 5.89   &lt;0.001 28.0 0.0684  0.137"
+  },
+  {
+    "objectID": "slides/marginaleffects-slides.html#section-9",
+    "href": "slides/marginaleffects-slides.html#section-9",
+    "title": "Moving from models to meaning",
+    "section": "",
+    "text": "What’s the difference in average life expectancy between North America and South Asia?\n\nQuantity: Comparison: difference in means\nGrid: Predictions for each row\nAggregation: Collapse into two region specific averages\n\navg_comparisons(\n  model_mixer, \n  variables = {\"region\": [\"North America\", \"South Asia\"]}\n)\nEstimate Std. Error     z Pr(&gt;|z|)   S 2.5 % 97.5 %\n    -1.36       0.67 -2.03    0.042 4.6 -2.68 -0.049"
+  },
+  {
+    "objectID": "slides/marginaleffects-slides.html#section-10",
+    "href": "slides/marginaleffects-slides.html#section-10",
+    "title": "Moving from models to meaning",
+    "section": "",
+    "text": "You can get these same numbers from a regression table!\n \n\n\n# A tibble: 9 × 5\n  term                             estimate std.error statistic      p.value\n  &lt;chr&gt;                               &lt;dbl&gt;     &lt;dbl&gt;     &lt;dbl&gt;        &lt;dbl&gt;\n1 (Intercept)                      -2.82      1.35       -2.08  0.0400      \n2 life_expectancy                   0.102     0.0174      5.89  0.0000000587\n3 school_enrollment                 0.00769   0.00979     0.785 0.435       \n4 regionEurope & Central Asia       0.0315    0.255       0.123 0.902       \n5 regionLatin America & Caribbean   0.732     0.294       2.49  0.0146      \n6 regionMiddle East & North Africa  0.189     0.317       0.597 0.552       \n7 regionNorth America               1.11      0.581       1.92  0.0582      \n8 regionSouth Asia                 -0.249     0.450      -0.553 0.582       \n9 regionSub-Saharan Africa          0.326     0.407       0.802 0.425"
+  },
+  {
+    "objectID": "slides/marginaleffects-slides.html#more-complex-models",
+    "href": "slides/marginaleffects-slides.html#more-complex-models",
+    "title": "Moving from models to meaning",
+    "section": "More complex models",
+    "text": "More complex models"
+  },
+  {
+    "objectID": "slides/marginaleffects-slides.html#lets-square-life-expectancy",
+    "href": "slides/marginaleffects-slides.html#lets-square-life-expectancy",
+    "title": "Moving from models to meaning",
+    "section": "Let’s square life expectancy!",
+    "text": "Let’s square life expectancy!"
+  },
+  {
+    "objectID": "slides/marginaleffects-slides.html#section-11",
+    "href": "slides/marginaleffects-slides.html#section-11",
+    "title": "Moving from models to meaning",
+    "section": "",
+    "text": "model_poly = smf.ols(\n  \"happiness_score ~ life_expectancy + I(life_expectancy**2) + school_enrollment + latin_america\", \n  data = happiness.to_pandas()).fit()\nmodel_poly.summary()\n\n\n# A tibble: 5 × 5\n  term                 estimate std.error statistic   p.value\n  &lt;chr&gt;                   &lt;dbl&gt;     &lt;dbl&gt;     &lt;dbl&gt;     &lt;dbl&gt;\n1 (Intercept)          15.9       5.22        3.05  0.00296  \n2 life_expectancy      -0.425     0.150      -2.83  0.00561  \n3 I(life_expectancy^2)  0.00372   0.00106     3.50  0.000705 \n4 school_enrollment     0.00535   0.00903     0.592 0.555    \n5 latin_americaTRUE     0.802     0.197       4.08  0.0000929"
+  },
+  {
+    "objectID": "slides/marginaleffects-slides.html#section-12",
+    "href": "slides/marginaleffects-slides.html#section-12",
+    "title": "Moving from models to meaning",
+    "section": "",
+    "text": "avg_comparisons(\n  model_poly, \n  newdata = datagrid(life_expectancy = [60, 80]), \n  by = \"life_expectancy\", \n  variables=\"life_expectancy\"\n)\n\n\n\n            Term life_expectancy Estimate Std. Error    z Pr(&gt;|z|)    S   2.5 % 97.5 %\n life_expectancy              60   0.0256     0.0242 1.06     0.29  1.8 -0.0218  0.073\n life_expectancy              80   0.1746     0.0251 6.95   &lt;0.001 38.0  0.1254  0.224\n\nType:  response \nComparison: mean(+1)\nColumns: rowid, term, contrast, life_expectancy, estimate, std.error, statistic, p.value, s.value, conf.low, conf.high, predicted_lo, predicted_hi, predicted"
+  },
+  {
+    "objectID": "slides/marginaleffects-slides.html#section-14",
+    "href": "slides/marginaleffects-slides.html#section-14",
+    "title": "Moving from models to meaning",
+    "section": "",
+    "text": "avg_comparisons(\n  model_poly, \n  variables=\"life_expectancy\"\n)\n\n\n\n Estimate Std. Error   z Pr(&gt;|z|)    S 2.5 % 97.5 %\n    0.132     0.0157 8.4   &lt;0.001 54.3 0.101  0.163\n\nTerm: life_expectancy\nType:  response \nComparison: mean(+1)\nColumns: term, contrast, estimate, std.error, statistic, p.value, s.value, conf.low, conf.high, predicted_lo, predicted_hi, predicted"
+  },
+  {
+    "objectID": "slides/marginaleffects-slides.html#interaction-terms",
+    "href": "slides/marginaleffects-slides.html#interaction-terms",
+    "title": "Moving from models to meaning",
+    "section": "Interaction terms",
+    "text": "Interaction terms\nmodel_poly_int = smf.ols(\n    \"happiness_score ~ life_expectancy * latin_america + I(life_expectancy**2) * latin_america + school_enrollment\",\n    data=happiness.to_pandas()\n).fit()\n\n\n# A tibble: 7 × 5\n  term                                   estimate std.error statistic p.value\n  &lt;chr&gt;                                     &lt;dbl&gt;     &lt;dbl&gt;     &lt;dbl&gt;   &lt;dbl&gt;\n1 (Intercept)                            15.7       5.32        2.96  0.00390\n2 life_expectancy                        -0.420     0.153      -2.74  0.00734\n3 latin_americaTRUE                      58.5      98.3         0.595 0.553  \n4 I(life_expectancy^2)                    0.00369   0.00109     3.39  0.00102\n5 school_enrollment                       0.00517   0.00911     0.568 0.571  \n6 life_expectancy:latin_americaTRUE      -1.55      2.64       -0.587 0.558  \n7 latin_americaTRUE:I(life_expectancy^2)  0.0104    0.0177      0.587 0.558"
+  },
+  {
+    "objectID": "slides/marginaleffects-slides.html#section-16",
+    "href": "slides/marginaleffects-slides.html#section-16",
+    "title": "Moving from models to meaning",
+    "section": "",
+    "text": "avg_comparisons(\n  model_poly_int, \n  newdata = datagrid(life_expectancy = [60, 80], latin_america = [0, 1]), \n  by = [\"life_expectancy\", \"latin_america\"], \n  variables = \"life_expectancy\")\n           Term life_expectancy latin_america Estimate Std. Error\nlife_expectancy              60         FALSE   0.0265     0.0245\nlife_expectancy              60          TRUE  -0.2667     0.5021\nlife_expectancy              80         FALSE   0.1739     0.0258\nlife_expectancy              80          TRUE   0.2957     0.2171"
+  },
+  {
+    "objectID": "slides/marginaleffects-slides.html#section-17",
+    "href": "slides/marginaleffects-slides.html#section-17",
+    "title": "Moving from models to meaning",
+    "section": "",
+    "text": "What is the predicted level of happiness in a typical country with low and with high life expectancy in Latin America and not in Latin America?\n\nQuantity: Prediction—fitted values\nGrid: Fully synthetic data (plug in four rows)\nAggregation: None—report individual values\n\npredictions(\n  model_poly_int, \n  newdata = datagrid(life_expectancy = [60, 80], latin_america = [0, 1])\n)\nlife_expectancy latin_america Estimate Std. Error\n             60         FALSE     4.30      0.196\n             60          TRUE     7.24      3.769\n             80         FALSE     6.23      0.109\n             80          TRUE     7.25      0.525"
+  },
+  {
+    "objectID": "slides/marginaleffects-slides.html#section-18",
+    "href": "slides/marginaleffects-slides.html#section-18",
+    "title": "Moving from models to meaning",
+    "section": "",
+    "text": "Logistic regression\nBeta regression\nPoisson regression\nOrdered logistic regression\nMultilevel/hierarchical models\nBayesian models\n\nSee complete documentation with a billion examples and tutorials at https://marginaleffects.com/"
+  },
+  {
+    "objectID": "marginaleffects/index.html",
+    "href": "marginaleffects/index.html",
+    "title": "Moving from models to meaning",
+    "section": "",
+    "text": "All the materials we’ll use today are in a Python-based Quarto file:\n\n  Quarto project",
+    "crumbs": [
+      "{marginaleffects}",
+      "Moving from models to meaning"
+    ]
+  },
+  {
+    "objectID": "marginaleffects/index.html#materials",
+    "href": "marginaleffects/index.html#materials",
+    "title": "Moving from models to meaning",
+    "section": "",
+    "text": "All the materials we’ll use today are in a Python-based Quarto file:\n\n  Quarto project",
+    "crumbs": [
+      "{marginaleffects}",
+      "Moving from models to meaning"
+    ]
+  },
+  {
+    "objectID": "marginaleffects/index.html#slides",
+    "href": "marginaleffects/index.html#slides",
+    "title": "Moving from models to meaning",
+    "section": "Slides",
+    "text": "Slides\n\n  Slides",
+    "crumbs": [
+      "{marginaleffects}",
+      "Moving from models to meaning"
+    ]
+  },
+  {
+    "objectID": "marginaleffects/index.html#other-resources",
+    "href": "marginaleffects/index.html#other-resources",
+    "title": "Moving from models to meaning",
+    "section": "Other resources",
+    "text": "Other resources\n\nOfficial {marginaleffects} documentation (with so many examples)\nPaper introducing {marginaleffects}\nMarginalia: A guide to figuring out what the heck marginal effects, marginal slopes, average marginal effects, marginal effects at the mean, and all these other marginal things are",
+    "crumbs": [
+      "{marginaleffects}",
+      "Moving from models to meaning"
+    ]
+  },
+  {
+    "objectID": "causal-inference/index.html#example-code",
+    "href": "causal-inference/index.html#example-code",
+    "title": "DS4PS and causal inference",
+    "section": "Example code",
+    "text": "Example code\n```{r}\n#| warning: false\n#| message: false\nlibrary(tidyverse)\nlibrary(marginaleffects)\nlibrary(WeightIt)\nlibrary(parameters)\n\nnets &lt;- read_csv(\"https://www.andrewheiss.com/blog/2024/03/21/demystifying-ate-att-atu/mosquito_nets_v2.csv\")\n\nclrs &lt;- MoMAColors::moma.colors(\"ustwo\")\n```\n\n```{r}\nmodel_naive &lt;- lm(\n  malaria_risk ~ net, \n  data = nets\n)\nmodel_parameters(model_naive)\n```\n\n```{r}\nmodel_treatment &lt;- glm(\n  net ~ income + health, \n  data = nets, \n  family = binomial(link = \"logit\")\n)\n\nnets_with_weights &lt;- model_treatment |&gt; \n  predictions() |&gt; \n  rename(propensity = estimate) |&gt; \n  mutate(wts_ate = (net / propensity) + ((1 - net) / (1 - propensity))) |&gt;\n  mutate(malaria_risk = nets$malaria_risk)\n```\n\n```{r}\nweights_ate &lt;- weightit(\n  net ~ income + health, \n  data = nets, \n  method = \"glm\", \n  estimand = \"ATE\"\n)\n\n# Add the weights as a column in the data\nnets_with_weights$wts_ate_automatic &lt;- weights_ate$weights\n```\n\n```{r}\nplot_data_weights_ate &lt;- tibble(\n  propensity = weights_ate$ps,\n  weight = weights_ate$weights,\n  treatment = weights_ate$treat\n)\n\nggplot() + \n  geom_histogram(data = filter(plot_data_weights_ate, treatment == 1), \n    bins = 50, aes(x = propensity, fill = \"Treated people\")) + \n  geom_histogram(data = filter(plot_data_weights_ate, treatment == 0), \n    bins = 50, aes(x = propensity, y = -after_stat(count), fill = \"Untreated people\")) +\n  geom_hline(yintercept = 0, color = \"white\", linewidth = 0.25) +\n  scale_x_continuous(labels = scales::label_percent()) +\n  scale_y_continuous(label = abs) +\n  scale_fill_manual(values = c(clrs[1], clrs[6]), guide = guide_legend(reverse = TRUE)) +\n  labs(x = \"Propensity\", y = \"Count\", fill = NULL) +\n  theme_minimal() +\n  theme(\n    legend.position = \"top\",\n    legend.key.size = unit(0.65, \"lines\")\n  )\n```\n\n```{r}\nggplot() + \n  geom_histogram(data = filter(plot_data_weights_ate, treatment == 1), \n    bins = 50, aes(x = propensity, weight = weight, fill = \"Treated pseudo-population\")) + \n  geom_histogram(data = filter(plot_data_weights_ate, treatment == 0), \n    bins = 50, aes(x = propensity, weight = weight, y = -after_stat(count), fill = \"Untreated psuedo-population\")) +\n  geom_histogram(data = filter(plot_data_weights_ate, treatment == 1), \n    bins = 50, aes(x = propensity, fill = \"Treated people\")) + \n  geom_histogram(data = filter(plot_data_weights_ate, treatment == 0), \n    bins = 50, aes(x = propensity, y = -after_stat(count), fill = \"Untreated people\")) +\n  geom_hline(yintercept = 0, color = \"white\", linewidth = 0.25) +\n  scale_x_continuous(labels = scales::label_percent()) +\n  scale_y_continuous(label = abs) +\n  scale_fill_manual(\n    values = c(clrs[1], colorspace::lighten(clrs[1], 0.5), clrs[6], colorspace::lighten(clrs[6], 0.65)), \n    guide = guide_legend(reverse = FALSE, nrow = 2)) +\n  labs(x = \"Propensity\", y = \"Count\", fill = NULL) +\n  theme_minimal() +\n  theme(\n    legend.position = \"top\",\n    legend.key.size = unit(0.65, \"lines\")\n  )\n```\n\n```{r}\n# Fit an outcome model using the inverse probability weights\nmodel_outcome_ate &lt;- lm(\n  malaria_risk ~ net, \n  data = nets_with_weights, \n  weights = wts_ate_automatic\n)\n\n# Automatic g-computation with {marginaleffects}! This sets the \"net\" column to\n# each possible value of net (0 and 1) for the whole dataset, then calculates\n# the difference between the two sets of predictions\navg_comparisons(model_outcome_ate, variables = \"net\")\n```\n\n```{r}\n# Get ATT-focused weights for the treatment model\nweights_att &lt;- weightit(\n  net ~ income + health, \n  data = nets, \n  method = \"glm\", \n  estimand = \"ATT\"\n)\n\n# Add the weights as a column in the data\nnets_with_weights$wts_att &lt;- weights_att$weights\n```\n\n```{r}\nplot_data_weights_att &lt;- tibble(\n  propensity = weights_att$ps,\n  weight = weights_att$weights,\n  treatment = weights_att$treat\n)\n\nggplot() + \n  geom_histogram(data = filter(plot_data_weights_att, treatment == 0), \n    bins = 50, aes(x = propensity, weight = weight, y = -after_stat(count), fill = \"Untreated psuedo-population\")) +\n  geom_histogram(data = filter(plot_data_weights_att, treatment == 1), \n    bins = 50, aes(x = propensity, fill = \"Treated people\")) + \n  geom_histogram(data = filter(plot_data_weights_att, treatment == 0), \n    bins = 50, alpha = 0.5, \n    aes(x = propensity, y = -after_stat(count), fill = \"Untreated people\")) +\n  geom_hline(yintercept = 0, color = \"white\", linewidth = 0.25) +\n  scale_x_continuous(labels = scales::label_percent()) +\n  scale_y_continuous(label = abs) +\n  scale_fill_manual(\n    values = c(clrs[1], \"grey50\", colorspace::lighten(clrs[6], 0.65)), \n    guide = guide_legend(reverse = FALSE, nrow = 2)) +\n  labs(x = \"Propensity\", y = \"Count\", fill = NULL) +\n  theme_minimal() +\n  theme(\n    legend.position = \"top\",\n    legend.key.size = unit(0.65, \"lines\")\n  )\n```\n\n```{r}\nmodel_outcome_att &lt;- lm(\n  malaria_risk ~ net, \n  data = nets_with_weights, \n  weights = wts_att\n)\n```\n\n```{r}\n# Do g-computation *only* on treated observations\navg_comparisons(\n  model_outcome_att, \n  variables = \"net\", \n  newdata = filter(nets, net == 1)\n)\n```"
+  },
+  {
+    "objectID": "marginaleffects/playground.html",
+    "href": "marginaleffects/playground.html",
+    "title": "{marginaleffects} playground",
+    "section": "",
+    "text": "import polars as pl\nimport numpy as np\nimport statsmodels.formula.api as smf\nfrom marginaleffects import *\n\nhappiness = pl.read_csv(\"../data/happiness.csv\", null_values = \"NA\")\nhappiness = happiness.with_columns(\n    happiness[\"latin_america\"].cast(pl.Int32),\n    happiness[\"happiness_binary\"].cast(pl.Int32),\n    happiness[\"region\"].cast(pl.Categorical),\n    happiness[\"income\"].cast(pl.Categorical)\n)",
+    "crumbs": [
+      "{marginaleffects}",
+      "{marginaleffects} playground"
+    ]
+  },
+  {
+    "objectID": "marginaleffects/playground.html#happiness-and-life-expectancy",
+    "href": "marginaleffects/playground.html#happiness-and-life-expectancy",
+    "title": "{marginaleffects} playground",
+    "section": "Happiness and life expectancy",
+    "text": "Happiness and life expectancy\n\nmodel_mixer = smf.ols(\n  \"happiness_score ~ life_expectancy + school_enrollment + C(region)\", \n  data = happiness.to_pandas()).fit()\navg_comparisons(model_mixer, variables = \"life_expectancy\")\n\n\nshape: (1, 9)\n\n\n\nterm\ncontrast\nestimate\nstd_error\nstatistic\np_value\ns_value\nconf_low\nconf_high\n\n\nstr\nstr\nf64\nf64\nf64\nf64\nf64\nf64\nf64\n\n\n\n\n\"life_expectancy\"\n\"+1\"\n0.102474\n0.017387\n5.893645\n3.7777e-9\n27.979848\n0.068396\n0.136552",
+    "crumbs": [
+      "{marginaleffects}",
+      "{marginaleffects} playground"
+    ]
+  },
+  {
+    "objectID": "marginaleffects/playground.html#difference-between-north-america-and-south-asia",
+    "href": "marginaleffects/playground.html#difference-between-north-america-and-south-asia",
+    "title": "{marginaleffects} playground",
+    "section": "Difference between North America and South Asia",
+    "text": "Difference between North America and South Asia\n\navg_comparisons(\n  model_mixer, \n  variables = {\"region\": [\"North America\", \"South Asia\"]}\n)\n\n\nshape: (1, 9)\n\n\n\nterm\ncontrast\nestimate\nstd_error\nstatistic\np_value\ns_value\nconf_low\nconf_high\n\n\nstr\nstr\nf64\nf64\nf64\nf64\nf64\nf64\nf64\n\n\n\n\n\"region\"\n\"South Asia - North America\"\n-1.362978\n0.670415\n-2.033036\n0.042049\n4.571788\n-2.676967\n-0.048988\n\n\n\n\n\n\nSame results from a regular regression table, but it takes a lot more work!\n\nmodel_mixer.summary()\n\n\nOLS Regression Results\n\n\nDep. Variable:\nhappiness_score\nR-squared:\n0.565\n\n\nModel:\nOLS\nAdj. R-squared:\n0.528\n\n\nMethod:\nLeast Squares\nF-statistic:\n15.28\n\n\nDate:\nWed, 09 Apr 2025\nProb (F-statistic):\n3.68e-14\n\n\nTime:\n11:12:35\nLog-Likelihood:\n-111.78\n\n\nNo. Observations:\n103\nAIC:\n241.6\n\n\nDf Residuals:\n94\nBIC:\n265.3\n\n\nDf Model:\n8\n\n\n\n\nCovariance Type:\nnonrobust\n\n\n\n\n\n\n\n\n\n\n\ncoef\nstd err\nt\nP&gt;|t|\n[0.025\n0.975]\n\n\nIntercept\n-2.7896\n1.358\n-2.055\n0.043\n-5.485\n-0.094\n\n\nC(region)[T.Middle East & North Africa]\n0.1580\n0.248\n0.636\n0.526\n-0.335\n0.651\n\n\nC(region)[T.South Asia]\n-0.2803\n0.411\n-0.682\n0.497\n-1.096\n0.536\n\n\nC(region)[T.Latin America & Caribbean]\n0.7005\n0.221\n3.175\n0.002\n0.262\n1.138\n\n\nC(region)[T.Sub-Saharan Africa]\n0.2946\n0.371\n0.793\n0.430\n-0.443\n1.032\n\n\nC(region)[T.East Asia & Pacific]\n-0.0315\n0.255\n-0.123\n0.902\n-0.538\n0.475\n\n\nC(region)[T.North America]\n1.0827\n0.544\n1.989\n0.050\n0.002\n2.163\n\n\nlife_expectancy\n0.1025\n0.017\n5.894\n0.000\n0.068\n0.137\n\n\nschool_enrollment\n0.0077\n0.010\n0.785\n0.435\n-0.012\n0.027\n\n\n\n\n\n\n\n\nOmnibus:\n7.101\nDurbin-Watson:\n2.050\n\n\nProb(Omnibus):\n0.029\nJarque-Bera (JB):\n3.602\n\n\nSkew:\n-0.219\nProb(JB):\n0.165\n\n\nKurtosis:\n2.195\nCond. No.\n2.24e+03\n\n\n\nNotes:[1] Standard Errors assume that the covariance matrix of the errors is correctly specified.[2] The condition number is large, 2.24e+03. This might indicate that there arestrong multicollinearity or other numerical problems.\n\n\nAre these significantly different from each other?\n\navg_comparisons(\n  model_mixer, \n  variables = {\"region\": [\"North America\", \"South Asia\"]},\n  hypothesis=0\n)\n\n\nshape: (1, 9)\n\n\n\nterm\ncontrast\nestimate\nstd_error\nstatistic\np_value\ns_value\nconf_low\nconf_high\n\n\nstr\nstr\nf64\nf64\nf64\nf64\nf64\nf64\nf64\n\n\n\n\n\"region\"\n\"South Asia - North America\"\n-1.362978\n0.670415\n-2.033036\n0.042049\n4.571788\n-2.676967\n-0.048988\n\n\n\n\n\n\nIs it significantly different from -1?\n\navg_comparisons(\n  model_mixer, \n  variables = {\"region\": [\"North America\", \"South Asia\"]},\n  hypothesis=-1\n)\n\n\nshape: (1, 9)\n\n\n\nterm\ncontrast\nestimate\nstd_error\nstatistic\np_value\ns_value\nconf_low\nconf_high\n\n\nstr\nstr\nf64\nf64\nf64\nf64\nf64\nf64\nf64\n\n\n\n\n\"region\"\n\"South Asia - North America\"\n-1.362978\n0.670415\n-0.541422\n0.588217\n0.765581\n-2.676967\n-0.048988",
+    "crumbs": [
+      "{marginaleffects}",
+      "{marginaleffects} playground"
+    ]
+  },
+  {
+    "objectID": "marginaleffects/playground.html#squared-life-expectancy",
+    "href": "marginaleffects/playground.html#squared-life-expectancy",
+    "title": "{marginaleffects} playground",
+    "section": "Squared life expectancy",
+    "text": "Squared life expectancy\n\nmodel_poly = smf.ols(\n  \"happiness_score ~ life_expectancy + I(life_expectancy**2) + school_enrollment + latin_america\", \n  data = happiness.to_pandas()).fit()\nmodel_poly.summary()\n\n\nOLS Regression Results\n\n\nDep. Variable:\nhappiness_score\nR-squared:\n0.589\n\n\nModel:\nOLS\nAdj. R-squared:\n0.572\n\n\nMethod:\nLeast Squares\nF-statistic:\n35.08\n\n\nDate:\nWed, 09 Apr 2025\nProb (F-statistic):\n3.66e-18\n\n\nTime:\n11:12:35\nLog-Likelihood:\n-108.92\n\n\nNo. Observations:\n103\nAIC:\n227.8\n\n\nDf Residuals:\n98\nBIC:\n241.0\n\n\nDf Model:\n4\n\n\n\n\nCovariance Type:\nnonrobust\n\n\n\n\n\n\n\n\n\n\n\ncoef\nstd err\nt\nP&gt;|t|\n[0.025\n0.975]\n\n\nIntercept\n15.9100\n5.220\n3.048\n0.003\n5.550\n26.270\n\n\nlife_expectancy\n-0.4251\n0.150\n-2.832\n0.006\n-0.723\n-0.127\n\n\nI(life_expectancy ** 2)\n0.0037\n0.001\n3.498\n0.001\n0.002\n0.006\n\n\nschool_enrollment\n0.0053\n0.009\n0.592\n0.555\n-0.013\n0.023\n\n\nlatin_america\n0.8022\n0.197\n4.077\n0.000\n0.412\n1.193\n\n\n\n\n\n\n\n\nOmnibus:\n7.729\nDurbin-Watson:\n1.984\n\n\nProb(Omnibus):\n0.021\nJarque-Bera (JB):\n5.183\n\n\nSkew:\n-0.402\nProb(JB):\n0.0749\n\n\nKurtosis:\n2.251\nCond. No.\n4.21e+05\n\n\n\nNotes:[1] Standard Errors assume that the covariance matrix of the errors is correctly specified.[2] The condition number is large, 4.21e+05. This might indicate that there arestrong multicollinearity or other numerical problems.\n\n\n\navg_comparisons(\n  model_poly, \n  newdata = datagrid(life_expectancy = [60, 80]), \n  by = \"life_expectancy\", \n  variables=\"life_expectancy\"\n)\n\n\nshape: (2, 10)\n\n\n\nlife_expectancy\nterm\ncontrast\nestimate\nstd_error\nstatistic\np_value\ns_value\nconf_low\nconf_high\n\n\nf64\nstr\nstr\nf64\nf64\nf64\nf64\nf64\nf64\nf64\n\n\n\n\n60.0\n\"life_expectancy\"\n\"+1\"\n0.021869\n0.025088\n0.871712\n0.383366\n1.383207\n-0.027302\n0.071041\n\n\n80.0\n\"life_expectancy\"\n\"+1\"\n0.170868\n0.024183\n7.065503\n1.6003e-12\n39.184817\n0.12347\n0.218267\n\n\n\n\n\n\n\nplot_predictions(\n  model_poly,\n  condition=\"life_expectancy\"\n)\n\n\n\n\n\n\n\n\nAre those two slopes significantly different from each other?\n\navg_comparisons(\n  model_poly, \n  newdata = datagrid(life_expectancy = [60, 80]), \n  by = \"life_expectancy\", \n  variables=\"life_expectancy\",\n  hypothesis = \"difference ~ pairwise\"\n)\n\n\nshape: (1, 8)\n\n\n\nterm\nestimate\nstd_error\nstatistic\np_value\ns_value\nconf_low\nconf_high\n\n\nstr\nf64\nf64\nf64\nf64\nf64\nf64\nf64\n\n\n\n\n\"(80.0) - (60.0)\"\n0.148999\n0.04259\n3.498484\n0.000468\n11.061478\n0.065525\n0.232473",
+    "crumbs": [
+      "{marginaleffects}",
+      "{marginaleffects} playground"
+    ]
+  },
+  {
+    "objectID": "marginaleffects/playground.html#interaction-terms",
+    "href": "marginaleffects/playground.html#interaction-terms",
+    "title": "{marginaleffects} playground",
+    "section": "Interaction terms",
+    "text": "Interaction terms\n\nmodel_poly_int = smf.ols(\n    \"happiness_score ~ life_expectancy * latin_america + I(life_expectancy**2) * latin_america + school_enrollment\",\n    data=happiness.to_pandas()\n).fit()\nmodel_poly_int.summary()\n\n\nOLS Regression Results\n\n\nDep. Variable:\nhappiness_score\nR-squared:\n0.590\n\n\nModel:\nOLS\nAdj. R-squared:\n0.565\n\n\nMethod:\nLeast Squares\nF-statistic:\n23.05\n\n\nDate:\nWed, 09 Apr 2025\nProb (F-statistic):\n1.10e-16\n\n\nTime:\n11:12:36\nLog-Likelihood:\n-108.73\n\n\nNo. Observations:\n103\nAIC:\n231.5\n\n\nDf Residuals:\n96\nBIC:\n249.9\n\n\nDf Model:\n6\n\n\n\n\nCovariance Type:\nnonrobust\n\n\n\n\n\n\n\n\n\n\n\ncoef\nstd err\nt\nP&gt;|t|\n[0.025\n0.975]\n\n\nIntercept\n15.7272\n5.317\n2.958\n0.004\n5.172\n26.282\n\n\nlife_expectancy\n-0.4196\n0.153\n-2.739\n0.007\n-0.724\n-0.116\n\n\nlatin_america\n58.5005\n98.312\n0.595\n0.553\n-136.647\n253.648\n\n\nlife_expectancy:latin_america\n-1.5484\n2.636\n-0.587\n0.558\n-6.782\n3.685\n\n\nI(life_expectancy ** 2)\n0.0037\n0.001\n3.388\n0.001\n0.002\n0.006\n\n\nI(life_expectancy ** 2):latin_america\n0.0104\n0.018\n0.587\n0.558\n-0.025\n0.045\n\n\nschool_enrollment\n0.0052\n0.009\n0.568\n0.571\n-0.013\n0.023\n\n\n\n\n\n\n\n\nOmnibus:\n7.750\nDurbin-Watson:\n1.996\n\n\nProb(Omnibus):\n0.021\nJarque-Bera (JB):\n4.988\n\n\nSkew:\n-0.381\nProb(JB):\n0.0826\n\n\nKurtosis:\n2.238\nCond. No.\n7.98e+06\n\n\n\nNotes:[1] Standard Errors assume that the covariance matrix of the errors is correctly specified.[2] The condition number is large, 7.98e+06. This might indicate that there arestrong multicollinearity or other numerical problems.\n\n\n\nplot_predictions(\n  model_poly_int,\n  condition = [\"life_expectancy\", \"latin_america\"]\n)\n\n\n\n\n\n\n\n\n\navg_comparisons(\n  model_poly_int,\n  newdata = datagrid(life_expectancy = [60, 80], latin_america = [0, 1]), \n  by = [\"life_expectancy\", \"latin_america\"], \n  variables = \"life_expectancy\")\n\n\nshape: (4, 11)\n\n\n\nlife_expectancy\nlatin_america\nterm\ncontrast\nestimate\nstd_error\nstatistic\np_value\ns_value\nconf_low\nconf_high\n\n\nf64\ni64\nstr\nstr\nf64\nf64\nf64\nf64\nf64\nf64\nf64\n\n\n\n\n60.0\n0\n\"life_expectancy\"\n\"+1\"\n0.022809\n0.025418\n0.897368\n0.369523\n1.436265\n-0.027009\n0.072627\n\n\n60.0\n1\n\"life_expectancy\"\n\"+1\"\n-0.280753\n0.51962\n-0.540305\n0.588987\n0.763693\n-1.299189\n0.737682\n\n\n80.0\n0\n\"life_expectancy\"\n\"+1\"\n0.170263\n0.024856\n6.849983\n7.3859e-12\n36.978369\n0.121546\n0.21898\n\n\n80.0\n1\n\"life_expectancy\"\n\"+1\"\n0.281633\n0.200314\n1.405955\n0.159737\n2.646226\n-0.110976\n0.674242",
+    "crumbs": [
+      "{marginaleffects}",
+      "{marginaleffects} playground"
+    ]
+  },
+  {
+    "objectID": "marginaleffects/playground.html#synthetic-data",
+    "href": "marginaleffects/playground.html#synthetic-data",
+    "title": "{marginaleffects} playground",
+    "section": "Synthetic data",
+    "text": "Synthetic data\n\npredictions(\n  model_poly_int, \n  newdata = datagrid(life_expectancy = [60, 80], latin_america = [0, 1])\n)\n\n\nshape: (4, 12)\n\n\n\nrowid\nestimate\nstd_error\nstatistic\np_value\ns_value\nconf_low\nconf_high\nlife_expectancy\nlatin_america\nhappiness_score\nschool_enrollment\n\n\ni32\nf64\nf64\nf64\nf64\nf64\nf64\nf64\nf64\ni64\nf64\nf64\n\n\n\n\n0\n4.29733\n0.195685\n21.9605\n0.0\ninf\n3.913796\n4.680865\n60.0\n0\n5.707689\n91.344333\n\n\n1\n7.240226\n3.769334\n1.920824\n0.054754\n4.190894\n-0.147533\n14.627984\n60.0\n1\n5.707689\n91.344333\n\n\n2\n6.228052\n0.109109\n57.081022\n0.0\ninf\n6.014202\n6.441901\n80.0\n0\n5.707689\n91.344333\n\n\n3\n7.249024\n0.52484\n13.811885\n0.0\ninf\n6.220357\n8.277691\n80.0\n1\n5.707689\n91.344333",
+    "crumbs": [
+      "{marginaleffects}",
+      "{marginaleffects} playground"
+    ]
+  }
+]

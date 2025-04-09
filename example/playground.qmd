@@ -1,0 +1,324 @@
+---
+title: "{marginaleffects} playground"
+toc: true
+---
+
+```{python}
+import polars as pl
+import numpy as np
+import statsmodels.formula.api as smf
+from marginaleffects import *
+
+happiness = pl.read_csv("data/happiness.csv", null_values = "NA")
+happiness = happiness.with_columns(
+    happiness["latin_america"].cast(pl.Int32),
+    happiness["happiness_binary"].cast(pl.Int32),
+    happiness["region"].cast(pl.Categorical),
+    happiness["income"].cast(pl.Categorical)
+)
+```
+
+# Sliders and switches
+
+```{python}
+#| warning: false
+model_slider = smf.ols(
+  "happiness_score ~ life_expectancy", 
+  data = happiness).fit()
+model_slider.summary()
+```
+
+```{python}
+#| warning: false
+plot_predictions(model_slider, condition = "life_expectancy")
+```
+
+```{python}
+#| warning: false
+model_switch = smf.ols(
+  "happiness_score ~ latin_america", 
+  data = happiness).fit()
+model_switch.summary()
+```
+
+```{python}
+#| warning: false
+plot_predictions(model_switch, condition = "latin_america")
+```
+
+```{python}
+model_mixer = smf.ols(
+  "happiness_score ~ life_expectancy + school_enrollment + C(region)", 
+  data = happiness.to_pandas()).fit()
+model_mixer.summary()
+```
+
+
+# Basic examples
+
+## Happiness and life expectancy
+
+```{python}
+#| warning: false
+model_mixer = smf.ols(
+  "happiness_score ~ life_expectancy + school_enrollment + C(region)", 
+  data = happiness.to_pandas()).fit()
+avg_comparisons(model_mixer, variables = "life_expectancy")
+```
+
+## Difference between North America and South Asia
+
+```{python}
+#| warning: false
+avg_comparisons(
+  model_mixer, 
+  variables = {"region": ["North America", "South Asia"]}
+)
+```
+
+Same results from a regular regression table, but it takes a lot more work!
+
+```{python}
+model_mixer.summary()
+```
+
+Are these significantly different from each other?
+
+```{python}
+#| warning: false
+avg_comparisons(
+  model_mixer, 
+  variables = {"region": ["North America", "South Asia"]},
+  hypothesis=0
+)
+```
+
+Is it significantly different from -1?
+
+```{python}
+#| warning: false
+avg_comparisons(
+  model_mixer, 
+  variables = {"region": ["North America", "South Asia"]},
+  hypothesis=-1
+)
+```
+
+## Squared life expectancy
+
+```{python}
+model_poly = smf.ols(
+  "happiness_score ~ life_expectancy + I(life_expectancy**2) + school_enrollment + latin_america", 
+  data = happiness.to_pandas()).fit()
+model_poly.summary()
+```
+
+```{python}
+#| warning: false
+avg_comparisons(
+  model_poly, 
+  newdata = datagrid(life_expectancy = [60, 80]), 
+  by = "life_expectancy", 
+  variables="life_expectancy"
+)
+```
+
+```{python}
+#| warning: false
+plot_predictions(
+  model_poly,
+  condition="life_expectancy"
+)
+```
+
+
+Are those two slopes significantly different from each other?
+
+```{python}
+#| warning: false
+avg_comparisons(
+  model_poly, 
+  newdata = datagrid(life_expectancy = [60, 80]), 
+  by = "life_expectancy", 
+  variables="life_expectancy",
+  hypothesis = "difference ~ pairwise"
+)
+```
+
+## Interaction terms
+
+```{python}
+#| warning: false
+model_poly_int = smf.ols(
+    "happiness_score ~ life_expectancy * latin_america + I(life_expectancy**2) * latin_america + school_enrollment",
+    data=happiness.to_pandas()
+).fit()
+model_poly_int.summary()
+```
+
+```{python}
+#| warning: false
+plot_predictions(
+  model_poly_int,
+  condition = ["life_expectancy", "latin_america"]
+)
+```
+
+```{python}
+#| warning: false
+avg_comparisons(
+  model_poly_int,
+  newdata = datagrid(life_expectancy = [60, 80], latin_america = [0, 1]), 
+  by = ["life_expectancy", "latin_america"], 
+  variables = "life_expectancy")
+```
+
+## Synthetic data
+
+```{python}
+#| warning: false
+predictions(
+  model_poly_int, 
+  newdata = datagrid(life_expectancy = [60, 80], latin_america = [0, 1])
+)
+```
+
+# Logistic regression
+
+```{python}
+model_logit = smf.logit(
+    formula="happiness_binary ~ life_expectancy + school_enrollment + latin_america",
+    data=happiness.to_pandas()
+).fit()
+model_logit.summary()
+```
+
+Ew log odds ↑
+
+Kinda okay odds ratios ↓
+
+```{python}
+np.exp(model_logit.params)
+```
+
+```{python}
+#| warning: false
+plot_predictions(
+  model_logit, 
+  condition=["life_expectancy", "latin_america"]
+)
+```
+
+Probability scale predictions
+
+```{python}
+#| warning: false
+predictions(
+  model_logit, 
+  newdata = datagrid(life_expectancy = [60, 80], latin_america = [0, 1])
+)
+```
+
+Probability scale slopes!
+
+```{python}
+#| warning: false
+comparisons(
+  model_logit, 
+  newdata = datagrid(life_expectancy = [60, 80], latin_america = [0, 1]),
+  by = ["life_expectancy", "latin_america"], 
+  variables = "life_expectancy"
+)
+```
+
+
+# Poisson regression
+
+```{python}
+equality = pl.read_csv("data/equality.csv")
+equality = equality.with_columns(
+    equality["historical"].cast(pl.Categorical),
+    equality["region"].cast(pl.Categorical),
+    equality["state"].cast(pl.Categorical)
+)
+```
+
+```{python}
+model_poisson = smf.poisson(
+  "laws ~ percent_urban + historical", 
+  data = equality.to_pandas()).fit()
+model_poisson.summary()
+```
+
+```{python}
+np.exp(model_poisson.params)
+```
+
+```{python}
+plot_predictions(
+  model_poisson, condition = ["percent_urban", "historical"]
+)
+```
+
+```{python}
+avg_slopes(
+  model_poisson,
+  newdata = datagrid(percent_urban = [45, 85], historical = ["dem", "gop", "swing"]),
+  by = ["percent_urban", "historical"],
+  variables = "percent_urban"
+)
+```
+
+# Your turn
+
+Create a model that explains variation in penguin weight (`body_mass_g`) based on flipper length, squared flipper length, bill length, and species interacted with flipper length:
+
+```
+body_mass_g ~ flipper_length_mm * species + I(flipper_length_mm**2) * species + bill_length_mm
+```
+
+```{python}
+penguins = pl.read_csv("data/penguins.csv")
+penguins = penguins.with_columns(
+    penguins["species"].cast(pl.Categorical),
+    penguins["island"].cast(pl.Categorical),
+    penguins["sex"].cast(pl.Categorical)
+)
+```
+
+```{python}
+# Code here
+```
+
+Look at the raw coefficients and try to interpret what happens to body mass as flipper length increases by one mm (and despair)
+
+Plot the predicted values of body mass across the full range of flipper lengths and across the three species
+
+- *Quantity*: Predictions
+- *Grid*: Predictions for each row
+- *Aggregation*: Display as smoothed line
+
+```{python}
+# Code here
+```
+
+On average, how does body mass increase in relation to small increases in flipper length across species?
+
+- *Quantity*: Comparison—a one-mm increase in flipper length (slope)
+- *Grid*: Predictions for six synthetic values (short and long flippers * three speices), with all other values held at the mean
+- *Aggregation*: Report values for predictions; no collapsing
+
+```{python}
+# Code here
+```
+
+Is there a significant difference in the average effect of flipper length between Adelies and Chinstraps?
+
+- *Quantity*: Comparison—a one-mm increase in flipper length (slope)
+- *Grid*: Predictions for two synthetic values (two species), with all other values held at the mean
+- *Aggregation*: Report values for predictions; no collapsing
+- *Test*: Difference in means
+
+```{python}
+# Code here
+```

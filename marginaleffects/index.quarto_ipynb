@@ -1,0 +1,480 @@
+{
+  "cells": [
+    {
+      "cell_type": "markdown",
+      "metadata": {},
+      "source": [
+        "---\n",
+        "title: \"{marginaleffects} playground\"\n",
+        "date: 2025-04-08\n",
+        "author: \"Andrew Heiss\"\n",
+        "toc: true\n",
+        "---"
+      ],
+      "id": "93b883ec"
+    },
+    {
+      "cell_type": "code",
+      "metadata": {},
+      "source": [
+        "import polars as pl\n",
+        "import numpy as np\n",
+        "import statsmodels.formula.api as smf\n",
+        "from marginaleffects import *\n",
+        "\n",
+        "happiness = pl.read_csv(\"data/happiness.csv\", null_values = \"NA\")\n",
+        "happiness = happiness.with_columns(\n",
+        "    happiness[\"latin_america\"].cast(pl.Int32),\n",
+        "    happiness[\"happiness_binary\"].cast(pl.Int32),\n",
+        "    happiness[\"region\"].cast(pl.Categorical),\n",
+        "    happiness[\"income\"].cast(pl.Categorical)\n",
+        ")"
+      ],
+      "id": "ddadc285",
+      "execution_count": null,
+      "outputs": []
+    },
+    {
+      "cell_type": "markdown",
+      "metadata": {},
+      "source": [
+        "# Sliders and switches"
+      ],
+      "id": "2c1780db"
+    },
+    {
+      "cell_type": "code",
+      "metadata": {},
+      "source": [
+        "#| warning: false\n",
+        "model_slider = smf.ols(\n",
+        "  \"happiness_score ~ life_expectancy\", \n",
+        "  data = happiness).fit()\n",
+        "model_slider.summary()"
+      ],
+      "id": "7f006725",
+      "execution_count": null,
+      "outputs": []
+    },
+    {
+      "cell_type": "code",
+      "metadata": {},
+      "source": [
+        "#| warning: false\n",
+        "plot_predictions(model_slider, condition = \"life_expectancy\")"
+      ],
+      "id": "34aec2e4",
+      "execution_count": null,
+      "outputs": []
+    },
+    {
+      "cell_type": "code",
+      "metadata": {},
+      "source": [
+        "#| warning: false\n",
+        "model_switch = smf.ols(\n",
+        "  \"happiness_score ~ latin_america\", \n",
+        "  data = happiness).fit()\n",
+        "model_switch.summary()"
+      ],
+      "id": "417d1cd2",
+      "execution_count": null,
+      "outputs": []
+    },
+    {
+      "cell_type": "code",
+      "metadata": {},
+      "source": [
+        "#| warning: false\n",
+        "plot_predictions(model_switch, condition = \"latin_america\")"
+      ],
+      "id": "9598a245",
+      "execution_count": null,
+      "outputs": []
+    },
+    {
+      "cell_type": "code",
+      "metadata": {},
+      "source": [
+        "model_mixer = smf.ols(\n",
+        "  \"happiness_score ~ life_expectancy + school_enrollment + C(region)\", \n",
+        "  data = happiness.to_pandas()).fit()\n",
+        "model_mixer.summary()"
+      ],
+      "id": "6dd5ca75",
+      "execution_count": null,
+      "outputs": []
+    },
+    {
+      "cell_type": "markdown",
+      "metadata": {},
+      "source": [
+        "# Basic examples\n",
+        "\n",
+        "## Happiness and life expectancy"
+      ],
+      "id": "3976393d"
+    },
+    {
+      "cell_type": "code",
+      "metadata": {},
+      "source": [
+        "#| warning: false\n",
+        "model_mixer = smf.ols(\n",
+        "  \"happiness_score ~ life_expectancy + school_enrollment + C(region)\", \n",
+        "  data = happiness.to_pandas()).fit()\n",
+        "avg_comparisons(model_mixer, variables = \"life_expectancy\")"
+      ],
+      "id": "4a022323",
+      "execution_count": null,
+      "outputs": []
+    },
+    {
+      "cell_type": "markdown",
+      "metadata": {},
+      "source": [
+        "## Difference between North America and South Asia"
+      ],
+      "id": "90ec0d5d"
+    },
+    {
+      "cell_type": "code",
+      "metadata": {},
+      "source": [
+        "#| warning: false\n",
+        "avg_comparisons(\n",
+        "  model_mixer, \n",
+        "  variables = {\"region\": [\"North America\", \"South Asia\"]}\n",
+        ")"
+      ],
+      "id": "214746fd",
+      "execution_count": null,
+      "outputs": []
+    },
+    {
+      "cell_type": "markdown",
+      "metadata": {},
+      "source": [
+        "Same results from a regular regression table, but it takes a lot more work!"
+      ],
+      "id": "de378de3"
+    },
+    {
+      "cell_type": "code",
+      "metadata": {},
+      "source": [
+        "model_mixer.summary()"
+      ],
+      "id": "68e34bb5",
+      "execution_count": null,
+      "outputs": []
+    },
+    {
+      "cell_type": "markdown",
+      "metadata": {},
+      "source": [
+        "Are these significantly different from each other?"
+      ],
+      "id": "96d8974b"
+    },
+    {
+      "cell_type": "code",
+      "metadata": {},
+      "source": [
+        "#| warning: false\n",
+        "avg_comparisons(\n",
+        "  model_mixer, \n",
+        "  variables = {\"region\": [\"North America\", \"South Asia\"]},\n",
+        "  hypothesis=0\n",
+        ")"
+      ],
+      "id": "44ffd404",
+      "execution_count": null,
+      "outputs": []
+    },
+    {
+      "cell_type": "markdown",
+      "metadata": {},
+      "source": [
+        "Is it significantly different from -1?"
+      ],
+      "id": "dc134eef"
+    },
+    {
+      "cell_type": "code",
+      "metadata": {},
+      "source": [
+        "#| warning: false\n",
+        "avg_comparisons(\n",
+        "  model_mixer, \n",
+        "  variables = {\"region\": [\"North America\", \"South Asia\"]},\n",
+        "  hypothesis=-1\n",
+        ")"
+      ],
+      "id": "378d7994",
+      "execution_count": null,
+      "outputs": []
+    },
+    {
+      "cell_type": "markdown",
+      "metadata": {},
+      "source": [
+        "## Squared life expectancy"
+      ],
+      "id": "51bd246a"
+    },
+    {
+      "cell_type": "code",
+      "metadata": {},
+      "source": [
+        "model_poly = smf.ols(\n",
+        "  \"happiness_score ~ life_expectancy + I(life_expectancy**2) + school_enrollment + latin_america\", \n",
+        "  data = happiness.to_pandas()).fit()\n",
+        "model_poly.summary()"
+      ],
+      "id": "431eab1d",
+      "execution_count": null,
+      "outputs": []
+    },
+    {
+      "cell_type": "code",
+      "metadata": {},
+      "source": [
+        "#| warning: false\n",
+        "avg_comparisons(\n",
+        "  model_poly, \n",
+        "  newdata = datagrid(life_expectancy = [60, 80]), \n",
+        "  by = \"life_expectancy\", \n",
+        "  variables=\"life_expectancy\"\n",
+        ")"
+      ],
+      "id": "1498a86a",
+      "execution_count": null,
+      "outputs": []
+    },
+    {
+      "cell_type": "code",
+      "metadata": {},
+      "source": [
+        "#| warning: false\n",
+        "plot_predictions(\n",
+        "  model_poly,\n",
+        "  condition=\"life_expectancy\"\n",
+        ")"
+      ],
+      "id": "0c8589fa",
+      "execution_count": null,
+      "outputs": []
+    },
+    {
+      "cell_type": "markdown",
+      "metadata": {},
+      "source": [
+        "Are those two slopes significantly different from each other?"
+      ],
+      "id": "21c8f657"
+    },
+    {
+      "cell_type": "code",
+      "metadata": {},
+      "source": [
+        "#| warning: false\n",
+        "avg_comparisons(\n",
+        "  model_poly, \n",
+        "  newdata = datagrid(life_expectancy = [60, 80]), \n",
+        "  by = \"life_expectancy\", \n",
+        "  variables=\"life_expectancy\",\n",
+        "  hypothesis = \"difference ~ pairwise\"\n",
+        ")"
+      ],
+      "id": "9bd5f751",
+      "execution_count": null,
+      "outputs": []
+    },
+    {
+      "cell_type": "markdown",
+      "metadata": {},
+      "source": [
+        "## Interaction terms"
+      ],
+      "id": "b8bb97e9"
+    },
+    {
+      "cell_type": "code",
+      "metadata": {},
+      "source": [
+        "#| warning: false\n",
+        "model_poly_int = smf.ols(\n",
+        "    \"happiness_score ~ life_expectancy * latin_america + I(life_expectancy**2) * latin_america + school_enrollment\",\n",
+        "    data=happiness.to_pandas()\n",
+        ").fit()\n",
+        "model_poly_int.summary()"
+      ],
+      "id": "a8e838d0",
+      "execution_count": null,
+      "outputs": []
+    },
+    {
+      "cell_type": "code",
+      "metadata": {},
+      "source": [
+        "#| warning: false\n",
+        "plot_predictions(\n",
+        "  model_poly_int,\n",
+        "  condition = [\"life_expectancy\", \"latin_america\"]\n",
+        ")"
+      ],
+      "id": "e9b92fac",
+      "execution_count": null,
+      "outputs": []
+    },
+    {
+      "cell_type": "code",
+      "metadata": {},
+      "source": [
+        "#| warning: false\n",
+        "avg_comparisons(\n",
+        "  model_poly_int,\n",
+        "  newdata = datagrid(life_expectancy = [60, 80], latin_america = [0, 1]), \n",
+        "  by = [\"life_expectancy\", \"latin_america\"], \n",
+        "  variables = \"life_expectancy\")"
+      ],
+      "id": "b67df6ae",
+      "execution_count": null,
+      "outputs": []
+    },
+    {
+      "cell_type": "markdown",
+      "metadata": {},
+      "source": [
+        "## Synthetic data"
+      ],
+      "id": "fb750080"
+    },
+    {
+      "cell_type": "code",
+      "metadata": {},
+      "source": [
+        "#| warning: false\n",
+        "predictions(\n",
+        "  model_poly_int, \n",
+        "  newdata = datagrid(life_expectancy = [60, 80], latin_america = [0, 1])\n",
+        ")"
+      ],
+      "id": "f9a427aa",
+      "execution_count": null,
+      "outputs": []
+    },
+    {
+      "cell_type": "markdown",
+      "metadata": {},
+      "source": [
+        "# Logistic regression"
+      ],
+      "id": "75aebf3f"
+    },
+    {
+      "cell_type": "code",
+      "metadata": {},
+      "source": [
+        "model_logit = smf.logit(\n",
+        "    formula=\"happiness_binary ~ life_expectancy + school_enrollment + latin_america\",\n",
+        "    data=happiness.to_pandas()\n",
+        ").fit()\n",
+        "model_logit.summary()"
+      ],
+      "id": "e462c17e",
+      "execution_count": null,
+      "outputs": []
+    },
+    {
+      "cell_type": "markdown",
+      "metadata": {},
+      "source": [
+        "Ew log odds ↑\n",
+        "\n",
+        "Kinda okay odds ratios ↓"
+      ],
+      "id": "74f07165"
+    },
+    {
+      "cell_type": "code",
+      "metadata": {},
+      "source": [
+        "np.exp(model_logit.params)"
+      ],
+      "id": "7e4d98fd",
+      "execution_count": null,
+      "outputs": []
+    },
+    {
+      "cell_type": "code",
+      "metadata": {},
+      "source": [
+        "#| warning: false\n",
+        "plot_predictions(\n",
+        "  model_logit, \n",
+        "  condition=[\"life_expectancy\", \"latin_america\"]\n",
+        ")"
+      ],
+      "id": "a1d98b8d",
+      "execution_count": null,
+      "outputs": []
+    },
+    {
+      "cell_type": "markdown",
+      "metadata": {},
+      "source": [
+        "Probability scale predictions"
+      ],
+      "id": "3b7427c5"
+    },
+    {
+      "cell_type": "code",
+      "metadata": {},
+      "source": [
+        "#| warning: false\n",
+        "predictions(\n",
+        "  model_logit, \n",
+        "  newdata = datagrid(life_expectancy = [60, 80], latin_america = [0, 1])\n",
+        ")"
+      ],
+      "id": "0c4dff50",
+      "execution_count": null,
+      "outputs": []
+    },
+    {
+      "cell_type": "markdown",
+      "metadata": {},
+      "source": [
+        "Probability scale slopes!"
+      ],
+      "id": "e2921aad"
+    },
+    {
+      "cell_type": "code",
+      "metadata": {},
+      "source": [
+        "#| warning: false\n",
+        "comparisons(\n",
+        "  model_logit, \n",
+        "  newdata = datagrid(life_expectancy = [60, 80], latin_america = [0, 1]),\n",
+        "  by = [\"life_expectancy\", \"latin_america\"], \n",
+        "  variables = \"life_expectancy\"\n",
+        ")"
+      ],
+      "id": "d1d1c9d8",
+      "execution_count": null,
+      "outputs": []
+    }
+  ],
+  "metadata": {
+    "kernelspec": {
+      "display_name": "Python 3",
+      "language": "python",
+      "name": "python3"
+    }
+  },
+  "nbformat": 4,
+  "nbformat_minor": 5
+}

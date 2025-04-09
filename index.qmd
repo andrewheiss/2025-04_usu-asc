@@ -1,0 +1,17 @@
+---
+title: "USU ASC"
+author:
+- name: Andrew Heiss
+  affiliations: 
+    - id: gsu
+      name: Georgia State University
+      department: Andrew Young School of Policy Studies, Department of Public Management and Policy
+      address: "55 Park Place NE, #464"
+      city: Atlanta
+      region: GA
+      country: USA
+      postal-code: 30303
+  orcid: 0000-0002-3948-3914
+  url: https://www.andrewheiss.com
+  email: aheiss@gsu.edu
+---

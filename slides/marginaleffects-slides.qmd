@@ -1,0 +1,475 @@
+---
+title: "Moving from models to meaning"
+subtitle: "How to interpret statistical models using {marginaleffects} in Python"
+author: "Andrew Heiss"
+date: "April 9, 2025"
+date-format: long
+format:
+  revealjs: 
+    slide-number: true
+    # chalkboard: 
+    #   buttons: false
+    preview-links: auto
+    theme: [simple, slides-custom.scss]
+    title-slide-attributes:
+      data-background-color: "#ff8e5e"
+    include-in-header: 
+      text: |
+        <style>
+        .v-center-container {
+          display: flex;
+          justify-content: center;
+          align-items: center;
+          height: 90%;
+        }
+        </style>
+---
+
+```{r include=FALSE}
+clrs <- MoMAColors::moma.colors("ustwo")
+clrs_lt <- colorspace::lighten(clrs, 0.9)
+
+options(digits = 3, width = 150)
+
+knitr::opts_chunk$set(
+  fig.width = 6,
+  fig.height = 6 * 0.618,
+  fig.retina = 3,
+  dev = "ragg_png",
+  fig.align = "center"
+)
+```
+
+```{r}
+#| warning: false
+#| message: false
+#| include: false
+library(tidyverse)
+library(marginaleffects)
+library(parameters)
+library(broom)
+
+happiness <- read_csv("../data/happiness.csv")
+```
+
+# Plan for today {background-color="`{r} clrs[4]`" .white}
+
+## {background-color="`{r} clrs_lt[4]`"}
+
+::: {.incremental style="font-size: 1.8em;"}
+- **Sliders, switches, and mixing boards**
+- **Moving from model to meaning**
+- **{marginaleffects} in action**
+:::
+
+
+# Sliders, switches, and mixing boards {background-color="`{r} clrs[1]`"}
+
+## {background-color="#fff"}
+
+::: {.v-center-container}
+![](img/slider-switch-annotated-80.jpg){fig-align="center" width="100%"}
+:::
+
+##
+
+```{.python}
+model_slider = smf.ols(
+  "happiness_score ~ life_expectancy", 
+  data = happiness).fit()
+model_slider.summary()
+```
+
+```{r}
+#| echo: false
+model_slider <- lm(
+  happiness_score ~ life_expectancy, 
+  data = happiness
+)
+model_parameters(model_slider, verbose = FALSE)
+```
+
+```{r}
+#| echo: false
+#| include: true
+plot_predictions(model_slider, condition = "life_expectancy")
+```
+
+##
+
+```{.python}
+model_switch = smf.ols(
+  "happiness_score ~ latin_america", 
+  data = happiness).fit()
+model_switch.summary()
+```
+
+```{r}
+#| echo: false
+model_switch <- lm(
+  happiness_score ~ latin_america, 
+  data = happiness
+)
+model_parameters(model_switch, verbose = FALSE)
+```
+
+```{r}
+#| echo: false
+#| include: true
+plot_predictions(model_switch, condition = "latin_america")
+```
+
+## {background-color="#fff"}
+
+::: {.v-center-container}
+![](img/mixer-board-annotated-80.jpg){fig-align="center" width="100%"}
+:::
+
+##
+
+```{.python}
+model_mixer = smf.ols(
+  "happiness_score ~ life_expectancy + school_enrollment + C(region)", 
+  data = happiness.to_pandas()).fit()
+model_mixer.summary()
+```
+
+```{r}
+#| echo: false
+model_mixer <- lm(
+  happiness_score ~ life_expectancy + school_enrollment + region, 
+  data = happiness
+)
+tidy(model_mixer)
+```
+
+# Moving from model to meaning {background-color="`{r} clrs[5]`"}
+
+## Stop looking at raw model parameters! {background-color="`{r} clrs_lt[5]`"}
+
+\ 
+
+Except in super simple models, dealing with raw coefficients is (1) a hassle and (2) impossible for readers and stakeholders to understand.
+
+\ 
+
+Convert model parameters into quantities that make more intuitive sense.
+
+## Post-estimation questions {background-color="`{r} clrs_lt[5]`"}
+
+::: {.incremental}
+1. **Quantity**: What are you interested in? Predictions? Comparisons of means? Relationships?
+2. **Predictors** or **Grid**: Which predictor values are you interested in? Predictions for rows in the dataset? For hypothetical new rows?
+3. **Aggregation**: Do you want to look at unit-level estimates or do you want to collapse estimates into summarized values?
+4. **Uncertainty**: How will you quantify uncertainty?
+5. **Test**: Which hypothesis tests are relevant?
+:::
+
+
+## Post-estimation questions {background-color="`{r} clrs_lt[5]`"}
+
+\ 
+
+More simply, **which values are you plugging into the model and what are you doing with them after?**
+
+## Quantity {background-color="`{r} clrs_lt[5]`"}
+
+\ 
+
+**Predictions** (or fitted values, adjusted predictions): What a model spits out after you plug stuff into it. Can be on the original scale of the outcome or transformed (like log odds or odds ratios).
+
+\ 
+
+```
+                  coef      std err         t  P>|t|
+Intercept         -2.2146     0.556    -3.983  0.000
+life_expectancy   0.1055      0.008    13.729  0.000
+```
+
+## Quantity {background-color="`{r} clrs_lt[5]`"}
+
+\ 
+
+$$
+\begin{aligned}
+\hat{\text{happiness}} &= -2.2146 + (0.1055 \times 70) \\
+&= 5.17
+\end{aligned}
+$$
+
+## Quantity {background-color="`{r} clrs_lt[5]`"}
+
+\ 
+
+**Comparisons**: Some function of two or more predictions—differences in means, risk ratios, effects, lift
+
+\ 
+
+**Slopes**: Partial derivative for a continuous predictor. Like a comparison, but moving it just a tiny bit.
+
+
+## Predictors (grid) {background-color="`{r} clrs_lt[5]`"}
+
+What values are you plugging into the model to generate the quantity of interest?
+
+- **Observed**: Actual observations (like Albania's 78.174 years of life expectancy)
+- **Partially synthetic**: Actual observations, but setting some columns to specific values
+- **Fully synthetic**: Made up observations (like making predictions for a typical country with 50, 60, 70, and 80 years of life expectancy, holding everything else constant)
+
+## Aggregation {background-color="`{r} clrs_lt[5]`"}
+
+\ 
+
+Are you collapsing the quantities of interest, and if so, how?
+
+- Individual estimates
+- Average estimates
+- Average estimates by group
+
+##
+
+::: {.v-center-container}
+![](img/twitter-cover@3x.png){fig-align="center" width="100%"}
+:::
+
+##
+
+::: {.v-center-container}
+![](img/flow-mer@3x.png){fig-align="center" width="100%"}
+:::
+
+# Enough theory—let's see some examples! {background-color="`{r} clrs[6]`"}
+
+## 
+
+**On average, how does happiness increase in relation to small increases in life expectancy?**
+
+- *Quantity*: Comparison—a one-unit increase in life expectancy (slope)
+- *Grid*: Predictions for each row
+- *Aggregation*: Collapse into overall average
+
+```{.python}
+model_mixer = smf.ols(
+  "happiness_score ~ life_expectancy + school_enrollment + C(region)", 
+  data = happiness.to_pandas()).fit()
+avg_comparisons(model_mixer, variables = "life_expectancy")
+```
+
+```
+ Estimate Std. Error    z Pr(>|z|)    S  2.5 % 97.5 %
+    0.102     0.0174 5.89   <0.001 28.0 0.0684  0.137
+```
+
+```{r}
+#| echo: false
+#| include: false
+avg_comparisons(model_mixer, variables = "life_expectancy")
+
+plot_predictions(model_mixer, condition = "life_expectancy")
+```
+
+## 
+
+**What's the difference in average life expectancy between North America and South Asia?**
+
+- *Quantity*: Comparison: difference in means
+- *Grid*: Predictions for each row
+- *Aggregation*: Collapse into two region specific averages
+
+```{.python}
+avg_comparisons(
+  model_mixer, 
+  variables = {"region": ["North America", "South Asia"]}
+)
+```
+
+```
+Estimate Std. Error     z Pr(>|z|)   S 2.5 % 97.5 %
+    -1.36       0.67 -2.03    0.042 4.6 -2.68 -0.049
+```
+
+```{r}
+#| include: false
+avg_comparisons(model_mixer, variables = list(region = c("North America", "South Asia")))
+```
+
+## 
+
+\ 
+
+**You can get these same numbers from a regression table!**
+
+\ 
+
+
+```{r}
+tidy(model_mixer)
+```
+
+## More complex models
+
+```{r}
+ggplot(happiness, aes(x = life_expectancy, y = happiness_score)) +
+  geom_point() +
+  geom_smooth(method = "lm", formula = y ~ x)
+```
+
+## Let's square life expectancy!
+
+```{r}
+ggplot(happiness, aes(x = life_expectancy, y = happiness_score)) +
+  geom_point() +
+  geom_smooth(method = "lm", formula = y ~ poly(x, 2))
+```
+
+##
+
+\ 
+
+```{.python}
+model_poly = smf.ols(
+  "happiness_score ~ life_expectancy + I(life_expectancy**2) + school_enrollment + latin_america", 
+  data = happiness.to_pandas()).fit()
+model_poly.summary()
+```
+
+```{r}
+model_poly <- lm(happiness_score ~ life_expectancy + I(life_expectancy^2) + school_enrollment + latin_america, data = happiness)
+broom::tidy(model_poly)
+```
+
+##
+
+```{.python}
+avg_comparisons(
+  model_poly, 
+  newdata = datagrid(life_expectancy = [60, 80]), 
+  by = "life_expectancy", 
+  variables="life_expectancy"
+)
+```
+
+```{r}
+avg_comparisons(model_poly, 
+  newdata = datagrid(life_expectancy = c(60, 80)), 
+  by = "life_expectancy",
+  variables = "life_expectancy"
+)
+```
+
+##
+
+```{r}
+ggplot(happiness, aes(x = life_expectancy, y = happiness_score)) +
+  geom_point() +
+  geom_smooth(method = "lm", formula = y ~ poly(x, 2)) +
+  geom_vline(xintercept = c(60, 80))
+```
+
+##
+
+```{.python}
+avg_comparisons(
+  model_poly, 
+  variables="life_expectancy"
+)
+```
+
+```{r}
+avg_comparisons(model_poly, variables = "life_expectancy")
+```
+
+## Interaction terms
+
+```{.python}
+model_poly_int = smf.ols(
+    "happiness_score ~ life_expectancy * latin_america + I(life_expectancy**2) * latin_america + school_enrollment",
+    data=happiness.to_pandas()
+).fit()
+```
+
+```{r}
+model_poly_int <- lm(happiness_score ~ life_expectancy*latin_america + I(life_expectancy^2)*latin_america + school_enrollment, data = happiness)
+broom::tidy(model_poly_int)
+```
+
+##
+
+```{r}
+plot_predictions(
+  model_poly_int,
+  condition = c("life_expectancy", "latin_america")
+) +
+  geom_vline(xintercept = c(60, 80))
+```
+
+##
+
+```{.python}
+avg_comparisons(
+  model_poly_int, 
+  newdata = datagrid(life_expectancy = [60, 80], latin_america = [0, 1]), 
+  by = ["life_expectancy", "latin_america"], 
+  variables = "life_expectancy")
+```
+
+```
+           Term life_expectancy latin_america Estimate Std. Error
+life_expectancy              60         FALSE   0.0265     0.0245
+life_expectancy              60          TRUE  -0.2667     0.5021
+life_expectancy              80         FALSE   0.1739     0.0258
+life_expectancy              80          TRUE   0.2957     0.2171
+```
+
+```{r}
+#| include: false
+avg_comparisons(model_poly_int, 
+  newdata = datagrid(life_expectancy = c(60, 80), latin_america = unique), 
+  by = c("life_expectancy", "latin_america"),
+  variables = "life_expectancy"
+)
+```
+
+## 
+
+**What is the predicted level of happiness in a typical country with low and with high life expectancy in Latin America and not in Latin America?**
+
+- *Quantity*: Prediction—fitted values
+- *Grid*: Fully synthetic data (plug in four rows)
+- *Aggregation*: None—report individual values
+
+```{.python}
+predictions(
+  model_poly_int, 
+  newdata = datagrid(life_expectancy = [60, 80], latin_america = [0, 1])
+)
+```
+
+```
+life_expectancy latin_america Estimate Std. Error
+             60         FALSE     4.30      0.196
+             60          TRUE     7.24      3.769
+             80         FALSE     6.23      0.109
+             80          TRUE     7.25      0.525
+```
+
+```{r}
+#| include: false
+predictions(
+  model_poly_int,
+  newdata = datagrid(life_expectancy = c(60, 80), latin_america = unique)
+)
+```
+
+# Not just for OLS! {background-color="`{r} clrs[2]`"}
+
+## {background-color="`{r} clrs_lt[2]`"}
+
+* Logistic regression
+* Beta regression
+* Poisson regression
+* Ordered logistic regression
+* Multilevel/hierarchical models
+* Bayesian models
+
+See complete documentation with a billion examples and tutorials at <https://marginaleffects.com/>

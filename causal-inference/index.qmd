@@ -1,0 +1,183 @@
+---
+title: "DS4PS and causal inference"
+---
+
+
+## Slides
+
+<div class="ratio ratio-16x9">
+<iframe class="slide-deck" src="https://docs.google.com/presentation/d/e/2PACX-1vSqt-bailAR1WJ28qLZio-h0Afo3hNNXL3If4w2P6INDOAvqBJyxyMSeGSlAs7kRjkKbAWDf3hy7C9i/pubembed?start=false&loop=false&delayms=3000" allowfullscreen="true" mozallowfullscreen="true" webkitallowfullscreen="true"></iframe>
+</div>
+
+
+## Example code
+
+````
+```{{r}}
+#| warning: false
+#| message: false
+library(tidyverse)
+library(marginaleffects)
+library(WeightIt)
+library(parameters)
+
+nets <- read_csv("https://www.andrewheiss.com/blog/2024/03/21/demystifying-ate-att-atu/mosquito_nets_v2.csv")
+
+clrs <- MoMAColors::moma.colors("ustwo")
+```
+
+```{{r}}
+model_naive <- lm(
+  malaria_risk ~ net, 
+  data = nets
+)
+model_parameters(model_naive)
+```
+
+```{{r}}
+model_treatment <- glm(
+  net ~ income + health, 
+  data = nets, 
+  family = binomial(link = "logit")
+)
+
+nets_with_weights <- model_treatment |> 
+  predictions() |> 
+  rename(propensity = estimate) |> 
+  mutate(wts_ate = (net / propensity) + ((1 - net) / (1 - propensity))) |>
+  mutate(malaria_risk = nets$malaria_risk)
+```
+
+```{{r}}
+weights_ate <- weightit(
+  net ~ income + health, 
+  data = nets, 
+  method = "glm", 
+  estimand = "ATE"
+)
+
+# Add the weights as a column in the data
+nets_with_weights$wts_ate_automatic <- weights_ate$weights
+```
+
+```{{r}}
+plot_data_weights_ate <- tibble(
+  propensity = weights_ate$ps,
+  weight = weights_ate$weights,
+  treatment = weights_ate$treat
+)
+
+ggplot() + 
+  geom_histogram(data = filter(plot_data_weights_ate, treatment == 1), 
+    bins = 50, aes(x = propensity, fill = "Treated people")) + 
+  geom_histogram(data = filter(plot_data_weights_ate, treatment == 0), 
+    bins = 50, aes(x = propensity, y = -after_stat(count), fill = "Untreated people")) +
+  geom_hline(yintercept = 0, color = "white", linewidth = 0.25) +
+  scale_x_continuous(labels = scales::label_percent()) +
+  scale_y_continuous(label = abs) +
+  scale_fill_manual(values = c(clrs[1], clrs[6]), guide = guide_legend(reverse = TRUE)) +
+  labs(x = "Propensity", y = "Count", fill = NULL) +
+  theme_minimal() +
+  theme(
+    legend.position = "top",
+    legend.key.size = unit(0.65, "lines")
+  )
+```
+
+```{{r}}
+ggplot() + 
+  geom_histogram(data = filter(plot_data_weights_ate, treatment == 1), 
+    bins = 50, aes(x = propensity, weight = weight, fill = "Treated pseudo-population")) + 
+  geom_histogram(data = filter(plot_data_weights_ate, treatment == 0), 
+    bins = 50, aes(x = propensity, weight = weight, y = -after_stat(count), fill = "Untreated psuedo-population")) +
+  geom_histogram(data = filter(plot_data_weights_ate, treatment == 1), 
+    bins = 50, aes(x = propensity, fill = "Treated people")) + 
+  geom_histogram(data = filter(plot_data_weights_ate, treatment == 0), 
+    bins = 50, aes(x = propensity, y = -after_stat(count), fill = "Untreated people")) +
+  geom_hline(yintercept = 0, color = "white", linewidth = 0.25) +
+  scale_x_continuous(labels = scales::label_percent()) +
+  scale_y_continuous(label = abs) +
+  scale_fill_manual(
+    values = c(clrs[1], colorspace::lighten(clrs[1], 0.5), clrs[6], colorspace::lighten(clrs[6], 0.65)), 
+    guide = guide_legend(reverse = FALSE, nrow = 2)) +
+  labs(x = "Propensity", y = "Count", fill = NULL) +
+  theme_minimal() +
+  theme(
+    legend.position = "top",
+    legend.key.size = unit(0.65, "lines")
+  )
+```
+
+```{{r}}
+# Fit an outcome model using the inverse probability weights
+model_outcome_ate <- lm(
+  malaria_risk ~ net, 
+  data = nets_with_weights, 
+  weights = wts_ate_automatic
+)
+
+# Automatic g-computation with {marginaleffects}! This sets the "net" column to
+# each possible value of net (0 and 1) for the whole dataset, then calculates
+# the difference between the two sets of predictions
+avg_comparisons(model_outcome_ate, variables = "net")
+```
+
+```{{r}}
+# Get ATT-focused weights for the treatment model
+weights_att <- weightit(
+  net ~ income + health, 
+  data = nets, 
+  method = "glm", 
+  estimand = "ATT"
+)
+
+# Add the weights as a column in the data
+nets_with_weights$wts_att <- weights_att$weights
+```
+
+```{{r}}
+plot_data_weights_att <- tibble(
+  propensity = weights_att$ps,
+  weight = weights_att$weights,
+  treatment = weights_att$treat
+)
+
+ggplot() + 
+  geom_histogram(data = filter(plot_data_weights_att, treatment == 0), 
+    bins = 50, aes(x = propensity, weight = weight, y = -after_stat(count), fill = "Untreated psuedo-population")) +
+  geom_histogram(data = filter(plot_data_weights_att, treatment == 1), 
+    bins = 50, aes(x = propensity, fill = "Treated people")) + 
+  geom_histogram(data = filter(plot_data_weights_att, treatment == 0), 
+    bins = 50, alpha = 0.5, 
+    aes(x = propensity, y = -after_stat(count), fill = "Untreated people")) +
+  geom_hline(yintercept = 0, color = "white", linewidth = 0.25) +
+  scale_x_continuous(labels = scales::label_percent()) +
+  scale_y_continuous(label = abs) +
+  scale_fill_manual(
+    values = c(clrs[1], "grey50", colorspace::lighten(clrs[6], 0.65)), 
+    guide = guide_legend(reverse = FALSE, nrow = 2)) +
+  labs(x = "Propensity", y = "Count", fill = NULL) +
+  theme_minimal() +
+  theme(
+    legend.position = "top",
+    legend.key.size = unit(0.65, "lines")
+  )
+```
+
+```{{r}}
+model_outcome_att <- lm(
+  malaria_risk ~ net, 
+  data = nets_with_weights, 
+  weights = wts_att
+)
+```
+
+```{{r}}
+# Do g-computation *only* on treated observations
+avg_comparisons(
+  model_outcome_att, 
+  variables = "net", 
+  newdata = filter(nets, net == 1)
+)
+```
+````

@@ -1,0 +1,22 @@
+---
+title: "Moving from models to meaning"
+subtitle: "How to interpret statistical models using {marginaleffects} in Python"
+toc: false
+---
+
+## Materials
+
+All the materials we'll use today are in a Python-based Quarto file:
+
+<p class="text-center"><a class="btn btn-info btn-lg" target="_blank" href="/example.zip">{{< fa file-zipper >}} &ensp;Quarto project</a></p>
+
+## Slides
+
+<p class="text-center"><a class="btn btn-info btn-lg" target="_blank" href="/slides/marginaleffects-slides.html">{{< fa display >}} &ensp;Slides</a></p>
+
+
+## Other resources
+
+- [Official {marginaleffects} documentation](https://marginaleffects.com/) (with *so many examples*)
+- [Paper introducing {marginaleffects}](https://doi.org/10.18637/jss.v111.i09)
+- [Marginalia: A guide to figuring out what the heck marginal effects, marginal slopes, average marginal effects, marginal effects at the mean, and all these other marginal things are](https://www.andrewheiss.com/blog/2022/05/20/marginalia/)
