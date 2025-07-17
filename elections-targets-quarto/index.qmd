@@ -1,0 +1,20 @@
+---
+title: "Elections, {targets}, and Quarto"
+---
+
+## Materials
+
+<p class="text-center"><a class="btn btn-info btn-lg" target="_blank" href="https://github.com/andrewheiss/targets-quarto-example">{{< fa brands github >}} &ensp;Example {targets} + Quarto project</a></p>
+
+
+## Resources
+
+- [Idaho 2024 election results](https://archive.voteidaho.gov/results/2024/general/)
+- [Quarto](https://quarto.org/)
+- [{targets}](https://books.ropensci.org/targets/)
+- Python-based pipeline tools:
+  - [Snakemake](https://snakemake.github.io/)
+  - [Luigi](https://github.com/spotify/luigi)
+  - [Prefect](https://www.prefect.io/)
+  - [Dagster](https://dagster.io/)
+  - [Airflow](https://airflow.apache.org/)

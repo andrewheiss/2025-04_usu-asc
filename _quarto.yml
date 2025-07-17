@@ -23,9 +23,11 @@ website:
         file: causal-inference/index.qmd
       - text: "{marginaleffects}"
         file: marginaleffects/index.qmd
+      - text: "Elections"
+        file: elections-targets-quarto/index.qmd
     right:
       - icon: github
-        href: "https://github.com/andrewheiss/2024-04_usu-asc"
+        href: "https://github.com/andrewheiss/2025-04_usu-asc"
         aria-label: GitHub
   
   sidebar:
@@ -45,7 +47,7 @@ website:
       [Creative Commons Attribution-NonCommercial 4.0 International license (CC BY-NC 4.0)](https://creativecommons.org/licenses/by-nc/4.0/)
     right: |
       Made with {{< fa brands r-project >}} and [Quarto](https://quarto.org/)<br>
-      [View the source at {{< fa brands github >}} GitHub](https://github.com/andrewheiss/2024-04_usu-asc)
+      [View the source at {{< fa brands github >}} GitHub](https://github.com/andrewheiss/2025-04_usu-asc)
 
 format:
   html:
